@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.2",
     "ffmpeg-static": "^4.4.1",
+    "slugify": "^1.6.5",
     "youtube-mp3-downloader": "^0.7.10"
   }
 }
