@@ -5,13 +5,16 @@ const slugify = require('slugify');
 const downloadRouter = express.Router();
 const pathToFfmpeg = require('ffmpeg-static');
 const YoutubeMp3Downloader = require('youtube-mp3-downloader');
+const downloadPath = require('downloads-folder');
 
 downloadRouter.get('/:videoId', async (req, res, next) => {
   console.log(pathToFfmpeg);
+  console.log(downloadPath.windows());
 
   try {
     var YD = new YoutubeMp3Downloader({
       ffmpegPath: pathToFfmpeg, // FFmpeg binary location
+      outputPath: downloadPath.windows(),
       youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
       queueParallelism: 2, // Download parallelism (default: 1)
       progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
