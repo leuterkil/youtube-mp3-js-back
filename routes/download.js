@@ -1,13 +1,41 @@
-const express = require("express");
-const ytdl = require("ytdl-core");
-const ffmpeg = require("fluent-ffmpeg");
-const slugify = require("slugify");
+const express = require('express');
+const ytdl = require('ytdl-core');
+const ffmpeg = require('fluent-ffmpeg');
+const slugify = require('slugify');
 const downloadRouter = express.Router();
+const pathToFfmpeg = require('ffmpeg-static');
+const YoutubeMp3Downloader = require('youtube-mp3-downloader');
 
+downloadRouter.get('/:videoId', async (req, res, next) => {
+  console.log(pathToFfmpeg);
 
+  try {
+    var YD = new YoutubeMp3Downloader({
+      ffmpegPath: pathToFfmpeg, // FFmpeg binary location
+      youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
+      queueParallelism: 2, // Download parallelism (default: 1)
+      progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
+      allowWebm: false, // Enable download from WebM sources (default: false)
+    });
 
-downloadRouter.get("/:videoId", async (req, res, next) => {
-    try {
+    YD.download('gT3zXBd2ksk');
+
+    YD.on('finished', function (err, data) {
+      console.log(JSON.stringify(data));
+    });
+
+    YD.on('error', function (error) {
+      console.log(error);
+      next();
+    });
+
+    YD.on('progress', function (progress) {
+      console.log(JSON.stringify(progress));
+    });
+  } catch {
+    console.log('error');
+  }
+  /* try {
       const videoUrl = `https://www.youtube.com/watch?v=${req.params.videoId}`;
   
       if (!ytdl.validateURL(videoUrl)) {
@@ -49,7 +77,7 @@ downloadRouter.get("/:videoId", async (req, res, next) => {
       });
     } catch (err) {
       res.status(400).send({ error: "Something went wrong" });
-    }
-  });
-  
-  module.exports = downloadRouter;
+    }*/
+});
+
+module.exports = downloadRouter;
