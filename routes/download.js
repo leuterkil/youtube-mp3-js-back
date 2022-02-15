@@ -12,51 +12,52 @@ const YoutubeMp3Downloader = require('youtube-mp3-downloader');
 
 downloadRouter.get('/:videoId', async (req, res, next) => {
 
-  var OSName="Unknown OS";
-  let dpath='';
-  const clientOS = req.headers['user-agent'];
-  if (clientOS.indexOf("Win")!=-1) OSName="Windows";
-  if (clientOS.indexOf("Mac")!=-1) OSName="MacOS";
-  if (clientOS.indexOf("X11")!=-1) OSName="UNIX";
-  if (clientOS.indexOf("Linux")!=-1) OSName="Linux";
-  console.log(OSName);
-  console.log(process.env.HOME);
+  try {
+    const videoUrl = `https://www.youtube.com/watch?v=${req.params.videoId}`;
 
-  if(OSName=="Windows")
-  {
-    dpath='C:/Users/'+os.userInfo().username+'/Downloads';
+    if (!ytdl.validateURL(videoUrl)) {
+      console.log("Invalid YouTube Url")
+      return res.status(400).send({ error: "Invalid YouTube Url" });
+    }
+
+    const videoInfo = await ytdl.getBasicInfo(videoUrl);
+    const fileName =
+      slugify(videoInfo.videoDetails.title, { replacement: " ", locale: "en", remove: /[\/\?<>\\:\*\|"]/g }) || "file";
+
+    res.set({
+      "Content-Disposition": `attachment; filename="${fileName}.mp3"`,
+      "Access-Control-Expose-Headers": "Content-Disposition",
+      "Content-Type": "audio/mpeg",
+    });
+
+    const downloadAudio = ytdl(videoUrl, { quality: "highestaudio" });
+
+    downloadAudio.on("error", (err) => {
+      console.log("Download failed!");
+      return res.status(400).send({ error: "Download failed!" });
+    });
+
+    const convertAudio = new ffmpeg({ source: downloadAudio });
+
+     convertAudio.setFfmpegPath(pathToFfmpeg) // Uncomment only if you need to set the ffmpeg path here!
+    // If you have the ffmpeg path in your environment variables you don't need this!
+
+    convertAudio.withAudioCodec("libmp3lame").toFormat("mp3").output(res).run();
+
+    convertAudio.on("error", () => {
+      convertAudio.kill();
+      downloadAudio.destroy();
+      console.log("Download the user!");
+      return res.status(400).send({ error: "Download canceled by the user" });
+    });
+
+    convertAudio.on("end", () => {
+      return res.end();
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Something went wrong" });
   }
-  else{
-    dpath='~/Downloads';
-  }
-
-  /*try {
-    var YD = new YoutubeMp3Downloader({
-      ffmpegPath: pathToFfmpeg, // FFmpeg binary location
-      outputPath:dpath,
-      youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
-      queueParallelism: 2, // Download parallelism (default: 1)
-      progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
-      allowWebm: false, // Enable download from WebM sources (default: false)
-    });
-
-    YD.download(req.params.videoId);
-
-    YD.on('finished', function (err, data) {
-      console.log(JSON.stringify(data));
-    });
-
-    YD.on('error', function (error) {
-      console.log(error);
-      next();
-    });
-
-    YD.on('progress', function (progress) {
-      console.log(JSON.stringify(progress));
-    });
-  } catch {
-    console.log('error');
-  }*/
 });
 
 module.exports = downloadRouter;
