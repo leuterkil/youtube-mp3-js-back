@@ -21,7 +21,7 @@ downloadRouter.get('/:videoId', async (req, res, next) => {
       allowWebm: false, // Enable download from WebM sources (default: false)
     });
 
-    YD.download('gT3zXBd2ksk');
+    YD.download(req.params.videoId);
 
     YD.on('finished', function (err, data) {
       console.log(JSON.stringify(data));
