@@ -20,6 +20,7 @@ downloadRouter.get('/:videoId', async (req, res, next) => {
   if (clientOS.indexOf("X11")!=-1) OSName="UNIX";
   if (clientOS.indexOf("Linux")!=-1) OSName="Linux";
   console.log(OSName);
+  console.log(process.env.HOME);
 
   if(OSName=="Windows")
   {
@@ -29,7 +30,7 @@ downloadRouter.get('/:videoId', async (req, res, next) => {
     dpath='~/Downloads';
   }
 
-  try {
+  /*try {
     var YD = new YoutubeMp3Downloader({
       ffmpegPath: pathToFfmpeg, // FFmpeg binary location
       outputPath:dpath,
@@ -55,7 +56,7 @@ downloadRouter.get('/:videoId', async (req, res, next) => {
     });
   } catch {
     console.log('error');
-  }
+  }*/
 });
 
 module.exports = downloadRouter;
