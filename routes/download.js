@@ -7,14 +7,32 @@ const os = require('os');
 const pathToFfmpeg = require('ffmpeg-static');
 const YoutubeMp3Downloader = require('youtube-mp3-downloader');
 
+
+
+
 downloadRouter.get('/:videoId', async (req, res, next) => {
-  
-  const dpath=os.homedir()+'\\Downloads';
-  const dPath = os.homedir();
+
+  var OSName="Unknown OS";
+  let dpath='';
+  const clientOS = req.headers['user-agent'];
+  if (clientOS.indexOf("Win")!=-1) OSName="Windows";
+  if (clientOS.indexOf("Mac")!=-1) OSName="MacOS";
+  if (clientOS.indexOf("X11")!=-1) OSName="UNIX";
+  if (clientOS.indexOf("Linux")!=-1) OSName="Linux";
+  console.log(OSName);
+
+  if(OSName=="Windows")
+  {
+    dpath='C:/Users/'+os.userInfo().username+'/Downloads';
+  }
+  else{
+    dpath='~/Downloads';
+  }
 
   try {
     var YD = new YoutubeMp3Downloader({
       ffmpegPath: pathToFfmpeg, // FFmpeg binary location
+      outputPath:dpath,
       youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
       queueParallelism: 2, // Download parallelism (default: 1)
       progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
